@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Bit</string>
+
+    <string name="search_hint">Please enter the user name</string>
+    <string name="search_button">search</string>
+    <string name="add">+</string>
+    <string name="expand">expand album</string>
+    <string name="image_item">ItemImage</string>
+    <string name="open_button">open browse</string>
+    <string name="chosen_image">ChosenImage</string>
+    <string name="error0">インターネットに接続されていません。</string>
+    <string name="error1">存在しない、もしくはプロアカウントでないユーザーネームです。</string>
+    <string name="error2">エラーが発生しました。</string>
+    <string name="finish">全てのデータを取得済みです。</string>
+</resources>
