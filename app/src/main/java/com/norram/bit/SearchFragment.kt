@@ -3,16 +3,22 @@ package com.norram.bit
 import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Bundle
+import android.text.InputType
 import android.view.*
 import android.view.inputmethod.InputMethodManager
+import android.widget.ScrollView
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import android.widget.Toast
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.norram.bit.databinding.FragmentSearchBinding
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,11 +34,14 @@ class SearchFragment : Fragment() {
 
     private lateinit var binding: FragmentSearchBinding
     private var username = ""
+    private var iconUrl = ""
+    private var name = ""
     private var afterToken = ""
     private var instaMediaList = ArrayList<InstaMedia>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_search, container, false)
+        binding.searchView.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
@@ -59,29 +68,34 @@ class SearchFragment : Fragment() {
         }
 
         getMediaInfo() // tmp
-        setHasOptionsMenu(true)
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.options_menu, menu)
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when(item.itemId) {
-//            R.id.help -> { val dialogFragment = HelpDialogFragment() dialogFragment.show(supportFragmentManager,  "help_dialog") true }
-            R.id.expandAll -> {
-                binding.recyclerView.adapter?.let { it1 ->
-                    for(i in it1.itemCount downTo 0) {
-                        binding.recyclerView.findViewHolderForAdapterPosition(i)?.let { it2 ->
-                            val holder = it2 as CustomAdapter.ViewHolder
-                            if(holder.expand.isVisible && holder.isExpanded) holder.expand.performClick()
-                        }}}
-                true
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider{
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.options_menu, menu)
             }
-            else -> super.onOptionsItemSelected(item)
-        }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when(menuItem.itemId) {
+//            R.id.help -> { val dialogFragment = HelpDialogFragment() dialogFragment.show(supportFragmentManager,  "help_dialog") true }
+                    R.id.expandAll -> {
+                        binding.recyclerView.adapter?.let { it1 ->
+                            for(i in it1.itemCount downTo 0) {
+                                binding.recyclerView.findViewHolderForAdapterPosition(i)?.let { it2 ->
+                                    val holder = it2 as CustomAdapter.ViewHolder
+                                    if(holder.expand.isVisible && holder.isExpanded) holder.expand.performClick()
+                                }}}
+                        true
+                    }
+                    else -> true
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun getMediaInfo() {
@@ -109,7 +123,10 @@ class SearchFragment : Fragment() {
                 } else {
                     val bufferedReader = BufferedReader(InputStreamReader(connection.inputStream))
                     val jsonObj = JSONObject(bufferedReader.readText())
-                    val mediaJSON = jsonObj.getJSONObject("business_discovery").getJSONObject("media")
+                    val bdJSON = jsonObj.getJSONObject("business_discovery")
+                    iconUrl = bdJSON.getString("profile_picture_url")
+                    name = if(bdJSON.has("name")) bdJSON.getString("name") else ""
+                    val mediaJSON = bdJSON.getJSONObject("media")
                     val mediaArray = mediaJSON.getJSONArray("data")
                     val cursorsJSON = mediaJSON.getJSONObject("paging").getJSONObject("cursors")
 
@@ -148,8 +165,23 @@ class SearchFragment : Fragment() {
 
                 withContext(Dispatchers.Main) {
                     if (!isNormal) Toast.makeText(requireContext(), resources.getString(R.string.error1), Toast.LENGTH_SHORT).show()
-                    binding.recyclerView.adapter = CustomAdapter(requireContext(), instaMediaList, binding.mainLinear.width, binding.searchView)
-                    binding.recyclerView.layoutManager = GridLayoutManager(requireContext(), 3, RecyclerView.VERTICAL, false)
+                    else {
+                        if(afterToken == "") {
+                            binding.nestedScrollView.fullScroll(ScrollView.FOCUS_UP) // return to the top
+                            Picasso.get()
+                                .load(iconUrl)
+                                .resize(binding.mainLinear.width / 3, binding.mainLinear.width / 3) // 表示範囲の指定
+                                .centerCrop() // trim from the center
+                                .into(binding.iconImageView)
+                            if(name == "") binding.usernameText.visibility = View.GONE
+                            else {
+                                binding.usernameText.visibility = View.VISIBLE
+                                binding.usernameText.text = name
+                            }
+                        }
+                        binding.recyclerView.adapter = CustomAdapter(requireContext(), instaMediaList, binding.mainLinear.width, binding.searchView)
+                        binding.recyclerView.layoutManager = GridLayoutManager(requireContext(), 3, RecyclerView.VERTICAL, false)
+                    }
                 }
             }
         } catch(e: Exception) {
