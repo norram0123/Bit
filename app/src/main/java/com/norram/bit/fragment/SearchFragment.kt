@@ -8,13 +8,14 @@ import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.ScrollView
 import android.widget.SearchView
-import androidx.fragment.app.Fragment
 import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.norram.bit.databinding.FragmentSearchBinding
@@ -30,18 +31,29 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class SearchFragment : Fragment() {
-    private val requestUrlFormatter = Secret.requestUrlFormatter()
-
     private lateinit var binding: FragmentSearchBinding
+
+    private val requestUrlFormatter = Secret.requestUrlFormatter()
     private var username = ""
     private var iconUrl = ""
     private var name = ""
     private var afterToken = ""
     private var instaMediaList = ArrayList<InstaMedia>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_search, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val args: SearchFragmentArgs by navArgs()
         binding.searchView.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+        binding.searchView.setQuery(args.username, false)
+        username = args.username
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
@@ -60,22 +72,20 @@ class SearchFragment : Fragment() {
         binding.searchButton.setOnClickListener {
             //clear focus
             binding.searchView.clearFocus()
-            val inputMethodManager = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val inputMethodManager
+                    = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(it.windowToken, 0)
 
             dataReset()
             getMediaInfo()
         }
 
-        getMediaInfo() // tmp
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        binding.recyclerView.layoutManager =
+            GridLayoutManager(requireContext(), 3, RecyclerView.VERTICAL, false)
+        getMediaInfo()
 
         val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(object : MenuProvider{
+        menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.options_menu, menu)
             }
@@ -84,11 +94,12 @@ class SearchFragment : Fragment() {
                 return when(menuItem.itemId) {
 //            R.id.help -> { val dialogFragment = HelpDialogFragment() dialogFragment.show(supportFragmentManager,  "help_dialog") true }
                     R.id.expandAll -> {
-                        binding.recyclerView.adapter?.let { it1 ->
-                            for(i in it1.itemCount downTo 0) {
-                                binding.recyclerView.findViewHolderForAdapterPosition(i)?.let { it2 ->
-                                    val holder = it2 as CustomAdapter.ViewHolder
-                                    if(holder.expand.isVisible && holder.isExpanded) holder.expand.performClick()
+                        binding.recyclerView.adapter?.let { adapter ->
+                            for(i in adapter.itemCount downTo 0) {
+                                binding.recyclerView.findViewHolderForAdapterPosition(i)?.let {
+                                    val holder = it as SearchAdapter.ViewHolder
+                                    if(holder.expand.isVisible && holder.isExpanded)
+                                        holder.expand.performClick()
                                 }}}
                         true
                     }
@@ -107,7 +118,11 @@ class SearchFragment : Fragment() {
 
         val connectivityService = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         connectivityService.getNetworkCapabilities(connectivityService.activeNetwork) ?: run {
-            Toast.makeText(requireContext(), resources.getString(R.string.error0), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                resources.getString(R.string.error0),
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
@@ -115,7 +130,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun getImages(connection: HttpURLConnection) {
-        var isNormal = true // determine whether url is correct
+        var isNormal = true // judge whether url is correct
         try {
             CoroutineScope(Dispatchers.IO).launch {
                 if (connection.errorStream != null) {
@@ -158,34 +173,63 @@ class SearchFragment : Fragment() {
                             afterToken = ".after(" + cursorsJSON.getString("after") + ")"
                             getMediaInfo()
                         } else {
-                            Toast.makeText(requireContext(), resources.getString(R.string.finish), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                requireContext(),
+                                resources.getString(R.string.finish),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
+                    }
+
+                    val helper = HistoryOpenHelper(requireContext())
+                    helper.writableDatabase.use { db ->
+                        db.execSQL("insert into HISTORY_TABLE(url, name) " +
+                                "VALUES('$iconUrl', '$username')") // TODO: insert when distinct
                     }
                 }
 
                 withContext(Dispatchers.Main) {
-                    if (!isNormal) Toast.makeText(requireContext(), resources.getString(R.string.error1), Toast.LENGTH_SHORT).show()
+                    if (!isNormal) Toast.makeText(
+                        requireContext(),
+                        resources.getString(R.string.error1),
+                        Toast.LENGTH_SHORT
+                    ).show()
                     else {
-                        if(afterToken == "") {
-                            binding.nestedScrollView.fullScroll(ScrollView.FOCUS_UP) // return to the top
+                        if (afterToken == "") {
+                            // return to the top
+                            binding.nestedScrollView.fullScroll(ScrollView.FOCUS_UP)
                             Picasso.get()
                                 .load(iconUrl)
-                                .resize(binding.mainLinear.width / 3, binding.mainLinear.width / 3) // 表示範囲の指定
+                                .resize(
+                                    binding.mainLinear.width / 3,
+                                    binding.mainLinear.width / 3
+                                )
                                 .centerCrop() // trim from the center
                                 .into(binding.iconImageView)
-                            if(name == "") binding.usernameText.visibility = View.GONE
+                            if (name == "") binding.usernameText.visibility = View.GONE
                             else {
                                 binding.usernameText.visibility = View.VISIBLE
                                 binding.usernameText.text = name
                             }
                         }
-                        binding.recyclerView.adapter = CustomAdapter(requireContext(), instaMediaList, binding.mainLinear.width, binding.searchView)
-                        binding.recyclerView.layoutManager = GridLayoutManager(requireContext(), 3, RecyclerView.VERTICAL, false)
+
+                        binding.recyclerView.adapter = SearchAdapter(
+                            requireContext(),
+                            instaMediaList,
+                            binding.mainLinear.width,
+                            binding.searchView
+                        )
+
+                        binding.addButton.visibility = View.VISIBLE
                     }
                 }
             }
         } catch(e: Exception) {
-            Toast.makeText(requireContext(), resources.getString(R.string.error2), Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                requireContext(),
+                resources.getString(R.string.error2),
+                Toast.LENGTH_LONG
+            ).show()
         } finally { connection.disconnect() }
     }
 

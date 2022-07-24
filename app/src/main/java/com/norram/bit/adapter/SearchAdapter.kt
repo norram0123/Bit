@@ -13,7 +13,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 
 
-class CustomAdapter(private val context: Context, private val instaMediaList: ArrayList<InstaMedia>, private val widthSize: Int, private val searchView: SearchView): RecyclerView.Adapter<CustomAdapter.ViewHolder>() {
+class SearchAdapter(
+    private val context: Context,
+    private val instaMediaList: ArrayList<InstaMedia>,
+    private val widthSize: Int, private val searchView: SearchView): RecyclerView.Adapter<SearchAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val image: ImageView = view.findViewById(R.id.itemImageView)
@@ -22,7 +25,7 @@ class CustomAdapter(private val context: Context, private val instaMediaList: Ar
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(viewGroup.context).inflate(R.layout.list_item, viewGroup, false)
+        val view = LayoutInflater.from(viewGroup.context).inflate(R.layout.list_item_search, viewGroup, false)
         return ViewHolder(view)
     }
 
@@ -31,7 +34,7 @@ class CustomAdapter(private val context: Context, private val instaMediaList: Ar
         holder.isExpanded = instaMedia.flag
         Picasso.get()
             .load(instaMedia.url)
-            .resize(widthSize / 3, widthSize / 3) // display size
+            .resize(widthSize / 3, widthSize / 3)
             .centerCrop() // trim from the center
             .into(holder.image)
 

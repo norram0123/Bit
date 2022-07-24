@@ -3,11 +3,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation"
-    app:startDestination="@id/searchFragment">
+    app:startDestination="@id/modeFragment">
 
+    <fragment
+        android:id="@+id/modeFragment"
+        android:name="com.norram.bit.ModeFragment"
+        android:label="fragment_mode"
+        tools:layout="@layout/fragment_mode" >
+        <action
+            android:id="@+id/action_modeFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
+    </fragment>
     <fragment
         android:id="@+id/searchFragment"
         android:name="com.norram.bit.SearchFragment"
         android:label="fragment_search"
-        tools:layout="@layout/fragment_search" />
+        tools:layout="@layout/fragment_search">
+        <argument
+            android:name="username"
+            app:argType="string" />
+    </fragment>
 </navigation>

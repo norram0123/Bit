@@ -2,15 +2,16 @@
     <string name="app_name">Bit</string>
 
     <string name="search_hint">Please enter the user name</string>
-    <string name="search_button">search</string>
+    <string name="search_button">Search</string>
     <string name="add">+</string>
-    <string name="expand">expand album</string>
+    <string name="expand">Expand album</string>
+    <string name="mode">Choose mode</string>
     <string name="image_item">ItemImage</string>
-    <string name="open_button">open browse</string>
+    <string name="open_button">Open browse</string>
     <string name="chosen_image">ChosenImage</string>
     <string name="icon_image">IconImage</string>
-    <string name="error0">インターネットに接続されていません。</string>
-    <string name="error1">存在しない、もしくはプロアカウントでないユーザーネームです。</string>
-    <string name="error2">エラーが発生しました。</string>
-    <string name="finish">全てのデータを取得済みです。</string>
+    <string name="error0">You are not connected to the Internet.</string>
+    <string name="error1">The user name does not exist or not belong to a pro account.</string>
+    <string name="error2">Error has occurred.</string>
+    <string name="finish">All data have already been acquired.</string>
 </resources>

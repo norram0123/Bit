@@ -81,7 +81,8 @@
                     android:background="@drawable/button_round"
                     android:padding="0dp"
                     android:text="@string/add"
-                    android:textSize="24sp" />
+                    android:textSize="24sp"
+                    android:visibility="invisible" />
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>

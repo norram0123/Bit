@@ -20,8 +20,8 @@ class ViewerActivity : AppCompatActivity() {
 
         Picasso.get()
             .load(imageUrl)
-            .resize(widthSize, widthSize) // 表示範囲の指定
-            .centerInside() // アスペクト比維持
+            .resize(widthSize, widthSize)
+            .centerInside() // maintain aspect ratio
             .into(chosenImageView)
 
         openButton.setOnClickListener {
