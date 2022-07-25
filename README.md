@@ -26,12 +26,14 @@ class Secret {
 }
 ```
 
+<sub>※Please delete README.md when you compile.</sub>
+
 
 ## 📦 TODO
 <list>
-  <ui><h6>・Add history function</h6></ui>
   <ui><h6>・Add favorite function</h6></ui>
-  <ui>(I want to improve readability...)</ui>
+  <ui><h6>・Insert historical data into the database only if there are no duplicates</h6></ui>
+  <ui><h6>・Add Slide function in ViewerActivity</h6></ui>
 </list>
 　
 
