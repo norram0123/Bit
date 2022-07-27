@@ -7,8 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper
 class HistoryOpenHelper constructor(context: Context) : SQLiteOpenHelper(context, DBName, null, VERSION) {
     companion object {
         private const val DBName = "HISTORY_DB"
-        // Database version(onUpgrade method is run when growing in value)
-        private const val VERSION = 1
+        private const val VERSION = 1 // Database version(onUpgrade method is run when growing in value)
     }
 
     override fun onCreate(db: SQLiteDatabase) {

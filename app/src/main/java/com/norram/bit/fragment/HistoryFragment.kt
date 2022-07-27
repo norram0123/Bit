@@ -31,6 +31,43 @@ class HistoryFragment : Fragment() {
         binding.recyclerView.layoutManager =
             GridLayoutManager(requireContext(), 3, RecyclerView.VERTICAL, false)
 
+        val helper = HistoryOpenHelper(requireContext())
+        val historyList = ArrayList<HashMap<String, String>>()
+        helper.writableDatabase.use { db ->
+            db.execSQL("CREATE TEMPORARY TABLE HISTORY_TMP AS SELECT MAX(id), url, name FROM HISTORY_TABLE GROUP BY name")
+            db.execSQL("DELETE FROM HISTORY_TABLE")
+            db.execSQL("INSERT INTO HISTORY_TABLE SELECT * FROM HISTORY_TMP")
+            db.rawQuery(
+                "SELECT url, name FROM HISTORY_TABLE ORDER BY id DESC", null
+            ).use { c ->
+                var next = c.moveToFirst() // check cursor has first row or not
+                // get all rows
+                while (next) {
+                    val data = HashMap<String, String>()
+                    val url = c.getString(0)
+                    val name = c.getString(1)
+                    data["url"] = url
+                    data["name"] = name
+                    historyList.add(data)
+                    next = c.moveToNext() // check cursor has first row or not
+                }
+            }
+        }
+
+        val screen = Screen.getInstance()
+        if(!screen.isMeasured) {
+            screen.isMeasured = true
+            // use ViewTreeObserver to get accurate width
+            binding.historyLinear.viewTreeObserver.addOnGlobalLayoutListener (object :
+                ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    screen.width = binding.historyLinear.width
+                    binding.recyclerView.adapter = HistoryAdapter(historyList)
+                    binding.historyLinear.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                }
+            })
+        } else { binding.recyclerView.adapter = HistoryAdapter(historyList) }
+
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
@@ -40,39 +77,6 @@ class HistoryFragment : Fragment() {
                 return false
             }
             override fun onQueryTextChange(newText: String?): Boolean { return false }
-        })
-
-        val helper = HistoryOpenHelper(requireContext())
-        val historyList = ArrayList<HashMap<String, String>>()
-        val db = helper.writableDatabase
-        val c = db.rawQuery("select distinct url, name from HISTORY_TABLE order by id DESC", null)
-        try {
-            var next = c.moveToFirst() // check cursor has first row or not
-            // get all rows
-            while (next) {
-                val data = HashMap<String, String>()
-                val url = c.getString(0)
-                val name = c.getString(1)
-                data["url"] = url
-                data["name"] = name
-                historyList.add(data)
-                next = c.moveToNext() // check cursor has first row or not
-            }
-        } finally {
-            db.close()
-            c.close()
-        }
-
-        // use viewTreeObserver to get accurate width
-        binding.historyLinear.viewTreeObserver.addOnGlobalLayoutListener (object :
-            ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                binding.recyclerView.adapter = HistoryAdapter(
-                    historyList,
-                    binding.historyLinear.width
-                )
-                binding.historyLinear.viewTreeObserver.removeOnGlobalLayoutListener(this)
-            }
         })
 
         binding.searchButton.setOnClickListener {

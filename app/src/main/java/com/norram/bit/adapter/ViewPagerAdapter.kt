@@ -7,14 +7,11 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 
 class ViewPagerAdapter(private val list: Array<String>, fragmentManager: FragmentManager, lifecycle: Lifecycle) :
     FragmentStateAdapter(fragmentManager, lifecycle) {
-    override fun getItemCount(): Int {
-        return list.size
-    }
-
+    override fun getItemCount(): Int = list.size
     override fun createFragment(position: Int): Fragment {
-        when (position) {
-            0 -> return HistoryFragment()
+        return when (position) {
+            0 -> HistoryFragment()
+            else -> FavoriteFragment()
         }
-        return FavoriteFragment()
     }
 }

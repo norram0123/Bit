@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.os.Bundle
 import android.text.InputType
 import android.view.*
+import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
 import android.widget.ScrollView
 import android.widget.SearchView
@@ -35,10 +36,12 @@ class SearchFragment : Fragment() {
 
     private val requestUrlFormatter = Secret.requestUrlFormatter()
     private var username = ""
+    private var usernameTmp = ""
     private var iconUrl = ""
     private var name = ""
     private var afterToken = ""
     private var instaMediaList = ArrayList<InstaMedia>()
+    private var favoriteFlag = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -58,13 +61,13 @@ class SearchFragment : Fragment() {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
                     username = it
-                    dataReset()
+                    resetData()
                     getMediaInfo()
                 }
                 return false
             }
             override fun onQueryTextChange(newText: String?): Boolean {
-                newText?.let { username = it }
+                newText?.let { usernameTmp = it }
                 return false
             }
         })
@@ -76,8 +79,29 @@ class SearchFragment : Fragment() {
                     = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(it.windowToken, 0)
 
-            dataReset()
-            getMediaInfo()
+            if(usernameTmp != "") {
+                username = usernameTmp
+                resetData()
+                getMediaInfo()
+            }
+        }
+
+        binding.favoriteImageView.setOnClickListener {
+            val helper = FavoriteOpenHelper(requireContext())
+            helper.writableDatabase.use { db ->
+                favoriteFlag = if(favoriteFlag) {
+                    db.execSQL("DELETE FROM FAVORITE_TABLE WHERE name = '$username'")
+                    binding.favoriteImageView.setImageResource(R.drawable.ic_baseline_favorite_border_24)
+                    false
+                } else {
+                    db.execSQL("INSERT INTO FAVORITE_TABLE(url, name) " +
+                            "VALUES('$iconUrl', '$username')")
+                    binding.favoriteImageView.setImageResource(R.drawable.ic_baseline_favorite_pink_24)
+                    val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.touch_favorite)
+                    it.startAnimation(animation)
+                    true
+                }
+            }
         }
 
         binding.recyclerView.layoutManager =
@@ -183,8 +207,8 @@ class SearchFragment : Fragment() {
 
                     val helper = HistoryOpenHelper(requireContext())
                     helper.writableDatabase.use { db ->
-                        db.execSQL("insert into HISTORY_TABLE(url, name) " +
-                                "VALUES('$iconUrl', '$username')") // TODO: insert when distinct
+                        db.execSQL("INSERT INTO HISTORY_TABLE(url, name) " +
+                                "VALUES('$iconUrl', '$username')")
                     }
                 }
 
@@ -195,15 +219,12 @@ class SearchFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     ).show()
                     else {
+                        val screen = Screen.getInstance()
                         if (afterToken == "") {
-                            // return to the top
-                            binding.nestedScrollView.fullScroll(ScrollView.FOCUS_UP)
+                            binding.nestedScrollView.fullScroll(ScrollView.FOCUS_UP) // return to the top
                             Picasso.get()
                                 .load(iconUrl)
-                                .resize(
-                                    binding.mainLinear.width / 3,
-                                    binding.mainLinear.width / 3
-                                )
+                                .resize(screen.width / 3, screen.width / 3)
                                 .centerCrop() // trim from the center
                                 .into(binding.iconImageView)
                             if (name == "") binding.usernameText.visibility = View.GONE
@@ -216,11 +237,11 @@ class SearchFragment : Fragment() {
                         binding.recyclerView.adapter = SearchAdapter(
                             requireContext(),
                             instaMediaList,
-                            binding.mainLinear.width,
                             binding.searchView
                         )
 
                         binding.addButton.visibility = View.VISIBLE
+                        checkFavorite()
                     }
                 }
             }
@@ -233,8 +254,30 @@ class SearchFragment : Fragment() {
         } finally { connection.disconnect() }
     }
 
-    private fun dataReset() {
+    private fun resetData() {
         afterToken = ""
         instaMediaList = ArrayList()
+    }
+
+    private fun checkFavorite() {
+        binding.favoriteImageView.visibility = View.VISIBLE
+
+        val helper = FavoriteOpenHelper(requireContext())
+        helper.writableDatabase.use { db ->
+            db.rawQuery("SELECT name FROM FAVORITE_TABLE ORDER BY id DESC", null).use { c ->
+                var next = c.moveToFirst() // check cursor has first row or not
+                while (next) {
+                    val name = c.getString(0)
+                    if(name.equals(username)) {
+                        binding.favoriteImageView.setImageResource(R.drawable.ic_baseline_favorite_pink_24)
+                        favoriteFlag = true
+                        return
+                    }
+                    next = c.moveToNext() // check cursor has first row or not
+                }
+                binding.favoriteImageView.setImageResource(R.drawable.ic_baseline_favorite_border_24)
+                favoriteFlag = false
+            }
+        }
     }
 }

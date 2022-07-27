@@ -2,5 +2,7 @@
 <resources>
     <dimen name="btn_margin">8dp</dimen>
     <dimen name="item_padding">0dp</dimen>
+    <dimen name="item_margin">8dp</dimen>
     <dimen name="profile_mp">16dp</dimen>
+    <dimen name="text_padding">4dp</dimen>
 </resources>

@@ -16,11 +16,11 @@ class ViewerActivity : AppCompatActivity() {
         val chosenImageView: ImageView = findViewById(R.id.chosenImageView)
         val openButton: Button = findViewById(R.id.openButton)
         val imageUrl = intent.getStringExtra("IMAGE_URL")
-        val widthSize = intent.getIntExtra("WIDTH_SIZE", 300)
+        val screen = Screen.getInstance()
 
         Picasso.get()
             .load(imageUrl)
-            .resize(widthSize, widthSize)
+            .resize(screen.width, screen.width)
             .centerInside() // maintain aspect ratio
             .into(chosenImageView)
 

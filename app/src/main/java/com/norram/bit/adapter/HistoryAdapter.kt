@@ -11,8 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 
 class HistoryAdapter(
-    private val historyList: ArrayList<HashMap<String, String>>,
-    private val widthSize: Int): RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
+    private val historyList: ArrayList<HashMap<String, String>>): RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val image: ImageView = view.findViewById(R.id.itemHistoryImage)
@@ -26,10 +25,11 @@ class HistoryAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val screen = Screen.getInstance()
         val history = historyList[position]
         Picasso.get()
             .load(history["url"])
-            .resize(widthSize / 4, widthSize / 4)
+            .resize(screen.width / 4, screen.width / 4)
             .centerCrop() // trim from the center
             .into(holder.image)
         holder.text.text = history["name"]
@@ -43,5 +43,4 @@ class HistoryAdapter(
     }
 
     override fun getItemCount() = historyList.size
-
 }

@@ -16,11 +16,11 @@ import com.squareup.picasso.Picasso
 class SearchAdapter(
     private val context: Context,
     private val instaMediaList: ArrayList<InstaMedia>,
-    private val widthSize: Int, private val searchView: SearchView): RecyclerView.Adapter<SearchAdapter.ViewHolder>() {
+    private val searchView: SearchView): RecyclerView.Adapter<SearchAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val image: ImageView = view.findViewById(R.id.itemImageView)
-        val expand: Button = view.findViewById(R.id.itemExpandButton)
+        val image: ImageView = view.findViewById(R.id.itemSearchImage)
+        val expand: Button = view.findViewById(R.id.itemSearchButton)
         var isExpanded = true
     }
 
@@ -30,11 +30,12 @@ class SearchAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val screen = Screen.getInstance()
         val instaMedia = instaMediaList[position]
         holder.isExpanded = instaMedia.flag
         Picasso.get()
             .load(instaMedia.url)
-            .resize(widthSize / 3, widthSize / 3)
+            .resize(screen.width / 3, screen.width / 3)
             .centerCrop() // trim from the center
             .into(holder.image)
 
@@ -66,7 +67,6 @@ class SearchAdapter(
 
             val intent = Intent(context, ViewerActivity::class.java)
             intent.putExtra("IMAGE_URL", instaMedia.url)
-            intent.putExtra("WIDTH_SIZE", widthSize)
             context.startActivity(intent)
         }
     }

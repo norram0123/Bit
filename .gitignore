@@ -1,4 +1,4 @@
-/app/src/main/java/com/norram/bit/Secret.kt
+/app/src/main/java/com/norram/bit/data/Secret.kt
 *.iml
 .gradle
 /local.properties

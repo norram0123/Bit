@@ -11,10 +11,6 @@ import com.norram.bit.databinding.FragmentModeBinding
 
 class ModeFragment : Fragment() {
     private lateinit var binding: FragmentModeBinding
-    private val typesArray = arrayOf(
-        "Search",
-        "Favorite"
-    )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -26,11 +22,11 @@ class ModeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = ViewPagerAdapter(typesArray, requireActivity().supportFragmentManager, lifecycle)
+        val typesArray = arrayOf("Search", "Favorite")
+        val adapter = ViewPagerAdapter(typesArray, childFragmentManager, lifecycle)
         binding.viewPager.adapter = adapter
         TabLayoutMediator(binding.tabLayout, binding.viewPager) {tab, position ->
             tab.text = typesArray[position]
         }.attach()
-
     }
 }

@@ -24,5 +24,7 @@
         android:id="@+id/itemHistoryText"
         android:layout_width="match_parent"
         android:layout_height="72dp"
-        android:gravity="center_horizontal" />
+        android:gravity="center_horizontal"
+        android:paddingLeft="@dimen/text_padding"
+        android:paddingRight="@dimen/text_padding" />
 </LinearLayout>
