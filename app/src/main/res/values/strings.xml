@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Bit</string>
 
-    <string name="search_hint">Please enter the user name</string>
+    <string name="search_hint">Enter the user name or profile url</string>
     <string name="search_button">Search</string>
     <string name="add">+</string>
     <string name="expand">Expand album</string>

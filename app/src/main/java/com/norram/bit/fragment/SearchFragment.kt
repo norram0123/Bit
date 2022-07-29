@@ -2,6 +2,7 @@ package com.norram.bit
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.view.*
@@ -86,6 +87,9 @@ class SearchFragment : Fragment() {
             }
         }
 
+        val screen = Screen.getInstance()
+        binding.searchCard.radius = (screen.width / 6).toFloat()
+
         binding.favoriteImageView.setOnClickListener {
             val helper = FavoriteOpenHelper(requireContext())
             helper.writableDatabase.use { db ->
@@ -134,6 +138,7 @@ class SearchFragment : Fragment() {
     }
 
     private fun getMediaInfo() {
+        cutURL()
         val requestUrl = String.format(requestUrlFormatter, username, afterToken)
         val url = URL(requestUrl)
         val connection = url.openConnection() as HttpURLConnection
@@ -141,13 +146,19 @@ class SearchFragment : Fragment() {
         connection.readTimeout = 10_000
 
         val connectivityService = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        connectivityService.getNetworkCapabilities(connectivityService.activeNetwork) ?: run {
-            Toast.makeText(
-                requireContext(),
-                resources.getString(R.string.error0),
-                Toast.LENGTH_SHORT
-            ).show()
-            return
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            connectivityService.getNetworkCapabilities(connectivityService.activeNetwork) ?: run {
+                Toast.makeText(requireContext(),
+                    resources.getString(R.string.error0), Toast.LENGTH_SHORT).show()
+                return
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            connectivityService.activeNetworkInfo ?: run {
+                Toast.makeText(requireContext(),
+                    resources.getString(R.string.error0), Toast.LENGTH_SHORT).show()
+                return
+            }
         }
 
         getImages(connection)
@@ -155,11 +166,9 @@ class SearchFragment : Fragment() {
 
     private fun getImages(connection: HttpURLConnection) {
         var isNormal = true // judge whether url is correct
-        try {
+        runCatching {
             CoroutineScope(Dispatchers.IO).launch {
-                if (connection.errorStream != null) {
-                    isNormal = false
-                } else {
+                if (connection.errorStream == null) {
                     val bufferedReader = BufferedReader(InputStreamReader(connection.inputStream))
                     val jsonObj = JSONObject(bufferedReader.readText())
                     val bdJSON = jsonObj.getJSONObject("business_discovery")
@@ -197,11 +206,8 @@ class SearchFragment : Fragment() {
                             afterToken = ".after(" + cursorsJSON.getString("after") + ")"
                             getMediaInfo()
                         } else {
-                            Toast.makeText(
-                                requireContext(),
-                                resources.getString(R.string.finish),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Toast.makeText(requireContext(),
+                                resources.getString(R.string.finish), Toast.LENGTH_SHORT).show()
                         }
                     }
 
@@ -210,48 +216,60 @@ class SearchFragment : Fragment() {
                         db.execSQL("INSERT INTO HISTORY_TABLE(url, name) " +
                                 "VALUES('$iconUrl', '$username')")
                     }
-                }
+                } else { isNormal = false }
 
                 withContext(Dispatchers.Main) {
-                    if (!isNormal) Toast.makeText(
-                        requireContext(),
-                        resources.getString(R.string.error1),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    else {
-                        val screen = Screen.getInstance()
-                        if (afterToken == "") {
-                            binding.nestedScrollView.fullScroll(ScrollView.FOCUS_UP) // return to the top
-                            Picasso.get()
-                                .load(iconUrl)
-                                .resize(screen.width / 3, screen.width / 3)
-                                .centerCrop() // trim from the center
-                                .into(binding.iconImageView)
-                            if (name == "") binding.usernameText.visibility = View.GONE
-                            else {
-                                binding.usernameText.visibility = View.VISIBLE
-                                binding.usernameText.text = name
-                            }
-                        }
-
-                        binding.recyclerView.adapter = SearchAdapter(
-                            requireContext(),
-                            instaMediaList,
-                            binding.searchView
-                        )
-
-                        binding.addButton.visibility = View.VISIBLE
-                        checkFavorite()
+                    if (!isNormal) {
+                        Toast.makeText(requireContext(),
+                            resources.getString(R.string.error1), Toast.LENGTH_SHORT).show()
+                        return@withContext
                     }
+
+                    val screen = Screen.getInstance()
+                    if (afterToken == "") {
+                        binding.nestedScrollView.fullScroll(ScrollView.FOCUS_UP) // return to the top
+                        Picasso.get()
+                            .load(iconUrl)
+                            .resize(screen.width / 3, screen.width / 3)
+                            .centerCrop() // trim from the center
+                            .into(binding.iconImageView)
+                        if (name == "") binding.usernameText.visibility = View.GONE
+                        else {
+                            binding.usernameText.visibility = View.VISIBLE
+                            binding.usernameText.text = name
+                        }
+                    }
+
+                    binding.recyclerView.adapter = SearchAdapter(
+                        requireContext(),
+                        instaMediaList,
+                        binding.searchView
+                    )
+
+                    binding.addButton.visibility = View.VISIBLE
+                    checkFavorite()
                 }
             }
-        } catch(e: Exception) {
-            Toast.makeText(
-                requireContext(),
-                resources.getString(R.string.error2),
-                Toast.LENGTH_LONG
-            ).show()
-        } finally { connection.disconnect() }
+        }.fold(
+            onSuccess = {},
+            onFailure = {Toast.makeText(requireContext(),
+                resources.getString(R.string.error2), Toast.LENGTH_LONG).show() }
+        ).also { connection.disconnect() }
+    }
+
+    private fun cutURL() {
+        var prefix = "https://instagram.com/"
+        if(username.startsWith(prefix)) {
+            val preIdx = username.indexOf(prefix) + prefix.length
+            val sufIdx = username.indexOf("?")
+            if(sufIdx != -1) username = username.substring(preIdx, sufIdx)
+        }
+        prefix = "https://www.instagram.com/"
+        if(username.startsWith(prefix)) {
+            val preIdx = username.indexOf(prefix) + prefix.length
+            val sufIdx = username.lastIndexOf("/")
+            if(sufIdx != -1) username = username.substring(preIdx, sufIdx)
+        }
     }
 
     private fun resetData() {

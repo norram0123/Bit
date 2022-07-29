@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
@@ -14,6 +15,7 @@ class HistoryAdapter(
     private val historyList: ArrayList<HashMap<String, String>>): RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val card: CardView = view.findViewById(R.id.itemHistoryCard)
         val image: ImageView = view.findViewById(R.id.itemHistoryImage)
         val text: TextView = view.findViewById(R.id.itemHistoryText)
         val liner: LinearLayout = view.findViewById(R.id.itemHistoryLinear)
@@ -27,6 +29,7 @@ class HistoryAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val screen = Screen.getInstance()
         val history = historyList[position]
+        holder.card.radius = (screen.width / 8).toFloat()
         Picasso.get()
             .load(history["url"])
             .resize(screen.width / 4, screen.width / 4)

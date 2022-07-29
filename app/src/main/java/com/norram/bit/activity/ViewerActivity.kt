@@ -5,16 +5,17 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
-import android.widget.Button
-import android.widget.ImageView
+import androidx.appcompat.app.ActionBar
+import androidx.databinding.DataBindingUtil
+import com.norram.bit.databinding.ActivityViewerBinding
 import com.squareup.picasso.Picasso
 
 class ViewerActivity : AppCompatActivity() {
+    lateinit var binding: ActivityViewerBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_viewer)
-        val chosenImageView: ImageView = findViewById(R.id.chosenImageView)
-        val openButton: Button = findViewById(R.id.openButton)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_viewer)
         val imageUrl = intent.getStringExtra("IMAGE_URL")
         val screen = Screen.getInstance()
 
@@ -22,21 +23,12 @@ class ViewerActivity : AppCompatActivity() {
             .load(imageUrl)
             .resize(screen.width, screen.width)
             .centerInside() // maintain aspect ratio
-            .into(chosenImageView)
+            .into(binding.chosenImageView)
 
-        openButton.setOnClickListener {
+        binding.openButton.setOnClickListener {
             val uri = Uri.parse(imageUrl)
             val exIntent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(exIntent)
         }
-
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
-            android.R.id.home -> finish()
-        }
-        return super.onOptionsItemSelected(item)
     }
 }

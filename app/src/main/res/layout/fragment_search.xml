@@ -40,11 +40,10 @@
                     android:layout_height="match_parent">
 
                     <androidx.cardview.widget.CardView
-                        android:id="@+id/cardView"
+                        android:id="@+id/searchCard"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/profile_mp"
-                        app:cardCornerRadius="100dp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent">
@@ -66,7 +65,7 @@
                         android:textStyle="bold"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toStartOf="@+id/favoriteImageView"
-                        app:layout_constraintStart_toEndOf="@+id/cardView"
+                        app:layout_constraintStart_toEndOf="@+id/searchCard"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <ImageView
