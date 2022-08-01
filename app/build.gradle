@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 
     // for safe args
-    id 'androidx.navigation.safeargs'
+    id 'androidx.navigation.safeargs.kotlin'
 }
 
 android {
@@ -38,9 +38,11 @@ android {
 }
 
 dependencies {
+    def nav_version = "2.5.1"
+
     // for nav
-    implementation "androidx.navigation:navigation-fragment-ktx:2.5.1"
-    implementation "androidx.navigation:navigation-ui-ktx:2.5.1"
+    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
     // for coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
     // for picasso
