@@ -7,12 +7,15 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 
 class HistoryAdapter(
-    private val historyList: ArrayList<HashMap<String, String>>): RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
+    private val activity: FragmentActivity?,
+    private val historyList: ArrayList<HashMap<String, String>>
+    ): RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val card: CardView = view.findViewById(R.id.itemHistoryCard)
@@ -42,6 +45,11 @@ class HistoryAdapter(
                 val action = ModeFragmentDirections.actionModeFragmentToSearchFragment(it)
                 view.findNavController().navigate(action)
             }
+        }
+        holder.liner.setOnLongClickListener {
+            val dialogFragment = DeleteDialogFragment(this, historyList, position)
+            activity?.let { dialogFragment.show(it.supportFragmentManager,  "help_dialog") }
+            true // choose whether to interfere with setOnClickListener
         }
     }
 

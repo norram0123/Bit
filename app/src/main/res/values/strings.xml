@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Bit</string>
 
-    <string name="search_hint">Enter the user name or profile url</string>
+    <string name="search_hint">Enter username or profile url</string>
     <string name="search_button">Search</string>
     <string name="add">+</string>
     <string name="expand">Expand album</string>
@@ -15,4 +15,7 @@
     <string name="error1">The user name does not exist or not belong to a pro account.</string>
     <string name="error2">Error has occurred.</string>
     <string name="finish">All data have already been acquired.</string>
+    <string name="dialog_delete_history">Are you sure you want to delete the history?</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 </resources>

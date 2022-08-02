@@ -62,11 +62,11 @@ class HistoryFragment : Fragment() {
                 ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     screen.width = binding.historyLinear.width
-                    binding.recyclerView.adapter = HistoryAdapter(historyList)
+                    binding.recyclerView.adapter = HistoryAdapter(activity, historyList)
                     binding.historyLinear.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 }
             })
-        } else { binding.recyclerView.adapter = HistoryAdapter(historyList) }
+        } else { binding.recyclerView.adapter = HistoryAdapter(activity, historyList) }
 
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {

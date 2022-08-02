@@ -50,6 +50,6 @@ class FavoriteFragment : Fragment() {
             }
         }
 
-        binding.recyclerView.adapter = HistoryAdapter(favoriteList)
+        binding.recyclerView.adapter = HistoryAdapter(null, favoriteList)
     }
 }
