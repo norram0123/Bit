@@ -26,15 +26,12 @@ class Secret {
 }
 ```
 
-<sub>※Please delete README.md when you compile.</sub>
-
 
 ## 📦 TODO
-<list>
-  <ui><h6>・Add favorite function</h6></ui>
-  <ui><h6>・Insert historical data into the database only if there are no duplicates</h6></ui>
-  <ui><h6>・Add Slide function in ViewerActivity</h6></ui>
-</list>
+
+<h6>・Add slide and pinch-in(out) function in ViewerActivity</h6>
+<h6>・Fix CardView radius error</h6>
+<p>(I want to improve readability...)
 　
 
 ## 👀 Author
