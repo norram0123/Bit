@@ -13,7 +13,6 @@ import android.widget.SearchView
 import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
-import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -54,6 +53,8 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.nestedScrollView.visibility = View.GONE // prevent UI error
+
         val args: SearchFragmentArgs by navArgs()
         binding.searchView.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
         binding.searchView.setQuery(args.username, false)
@@ -80,11 +81,10 @@ class SearchFragment : Fragment() {
                     = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(it.windowToken, 0)
 
-            if(usernameTmp != "") {
-                username = usernameTmp
-                resetData()
-                getMediaInfo()
-            }
+            if(usernameTmp == "") return@setOnClickListener
+            username = usernameTmp
+            resetData()
+            getMediaInfo()
         }
 
         val screen = Screen.getInstance()
@@ -126,11 +126,13 @@ class SearchFragment : Fragment() {
                             for(i in adapter.itemCount downTo 0) {
                                 binding.recyclerView.findViewHolderForAdapterPosition(i)?.let {
                                     val holder = it as SearchAdapter.ViewHolder
-                                    if(holder.expand.isVisible && holder.isExpanded)
-                                        holder.expand.performClick()
-                                }}}
+                                    if(holder.isExpanded) holder.expand.performClick()
+                                }
+                            }
+                        }
                         true
                     }
+
                     else -> true
                 }
             }
@@ -145,7 +147,8 @@ class SearchFragment : Fragment() {
         connection.connectTimeout = 10_000
         connection.readTimeout = 10_000
 
-        val connectivityService = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityService =
+            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             connectivityService.getNetworkCapabilities(connectivityService.activeNetwork) ?: run {
                 Toast.makeText(requireContext(),
@@ -165,89 +168,92 @@ class SearchFragment : Fragment() {
     }
 
     private fun getImages(connection: HttpURLConnection) {
-        var isNormal = true // judge whether url is correct
         runCatching {
             CoroutineScope(Dispatchers.IO).launch {
-                if (connection.errorStream == null) {
-                    val bufferedReader = BufferedReader(InputStreamReader(connection.inputStream))
-                    val jsonObj = JSONObject(bufferedReader.readText())
-                    val bdJSON = jsonObj.getJSONObject("business_discovery")
-                    iconUrl = bdJSON.getString("profile_picture_url")
-                    name = if(bdJSON.has("name")) bdJSON.getString("name") else ""
-                    val mediaJSON = bdJSON.getJSONObject("media")
-                    val mediaArray = mediaJSON.getJSONArray("data")
-                    val cursorsJSON = mediaJSON.getJSONObject("paging").getJSONObject("cursors")
-
-                    for (i in 0 until mediaArray.length()) {
-                        val mediaData = mediaArray.getJSONObject(i)
-                        val childrenUrls = ArrayList<String>()
-                        if (mediaData.getString("media_type") == "CAROUSEL_ALBUM") {
-                            val childrenDataArray =
-                                mediaData.getJSONObject("children").getJSONArray("data")
-                            for (j in 1 until childrenDataArray.length()) {
-                                val childrenData = childrenDataArray.getJSONObject(j)
-                                if (childrenData.getString("media_type") == "IMAGE")
-                                    childrenUrls.add(childrenData.getString("media_url"))
-                            }
-                        }
-                        if (mediaData.getString("media_type") != "VIDEO")
-                            instaMediaList.add(
-                                InstaMedia(
-                                    mediaData.getString("media_url"),
-                                    mediaData.getString("media_type"),
-                                    childrenUrls,
-                                    true
-                                )
-                            )
+                val mContext: Context = context ?: return@launch
+                connection.errorStream?.let {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(mContext,
+                            resources.getString(R.string.error1), Toast.LENGTH_SHORT).show()
                     }
+                    return@launch
+                }
 
-                    binding.addButton.setOnClickListener {
-                        if (cursorsJSON.has("after")) {
+                val bufferedReader = BufferedReader(InputStreamReader(connection.inputStream))
+                val jsonObj = JSONObject(bufferedReader.readText())
+                val bdJSON = jsonObj.getJSONObject("business_discovery")
+                iconUrl = if(bdJSON.has("profile_picture_url")) bdJSON.getString("profile_picture_url") else ""
+                name = if(bdJSON.has("name")) bdJSON.getString("name") else ""
+                val mediaJSON = bdJSON.getJSONObject("media")
+                val mediaArray = mediaJSON.getJSONArray("data")
+
+                for (i in 0 until mediaArray.length()) {
+                    val mediaData = mediaArray.getJSONObject(i)
+                    val childrenUrls = ArrayList<String>()
+                    if (mediaData.getString("media_type") == "CAROUSEL_ALBUM"
+                        && mediaData.has("children")) {
+                        val childrenDataArray =
+                            mediaData.getJSONObject("children").getJSONArray("data")
+                        for (j in 1 until childrenDataArray.length()) {
+                            val childrenData = childrenDataArray.getJSONObject(j)
+                            if (childrenData.getString("media_type") == "IMAGE")
+                                childrenUrls.add(childrenData.getString("media_url"))
+                        }
+                    }
+                    if (mediaData.getString("media_type") != "VIDEO"
+                        && mediaData.has("media_url")
+                        && mediaData.has("media_type"))
+                        instaMediaList.add(
+                            InstaMedia(
+                                mediaData.getString("media_url"),
+                                mediaData.getString("media_type"),
+                                childrenUrls,
+                                true
+                            )
+                        )
+                }
+
+                val helper = HistoryOpenHelper(mContext)
+                helper.writableDatabase.use { db ->
+                    db.execSQL("INSERT INTO HISTORY_TABLE(url, name) " +
+                            "VALUES('$iconUrl', '$username')")
+                }
+
+                binding.addButton.setOnClickListener {
+                    if(mediaJSON.has("paging")) {
+                        val cursorsJSON = mediaJSON.getJSONObject("paging").getJSONObject("cursors")
+                        if(cursorsJSON.has("after")) {
                             afterToken = ".after(" + cursorsJSON.getString("after") + ")"
                             getMediaInfo()
-                        } else {
-                            Toast.makeText(requireContext(),
-                                resources.getString(R.string.finish), Toast.LENGTH_SHORT).show()
+                            return@setOnClickListener
                         }
                     }
-
-                    val helper = HistoryOpenHelper(requireContext())
-                    helper.writableDatabase.use { db ->
-                        db.execSQL("INSERT INTO HISTORY_TABLE(url, name) " +
-                                "VALUES('$iconUrl', '$username')")
-                    }
-                } else { isNormal = false }
+                    Toast.makeText(mContext,
+                        resources.getString(R.string.finish), Toast.LENGTH_SHORT).show()
+                }
 
                 withContext(Dispatchers.Main) {
-                    if (!isNormal) {
-                        Toast.makeText(requireContext(),
-                            resources.getString(R.string.error1), Toast.LENGTH_SHORT).show()
-                        return@withContext
-                    }
-
                     val screen = Screen.getInstance()
                     if (afterToken == "") {
                         binding.nestedScrollView.fullScroll(ScrollView.FOCUS_UP) // return to the top
-                        Picasso.get()
-                            .load(iconUrl)
-                            .resize(screen.width / 3, screen.width / 3)
-                            .centerCrop() // trim from the center
-                            .into(binding.iconImageView)
-                        if (name == "") binding.usernameText.visibility = View.GONE
-                        else {
-                            binding.usernameText.visibility = View.VISIBLE
-                            binding.usernameText.text = name
+                        binding.usernameText.text = name
+                        if(iconUrl != "") {
+                            Picasso.get()
+                                .load(iconUrl)
+                                .resize(screen.width / 3, screen.width / 3)
+                                .centerCrop() // trim from the center
+                                .into(binding.iconImageView)
                         }
                     }
 
                     binding.recyclerView.adapter = SearchAdapter(
-                        requireContext(),
+                        mContext,
                         instaMediaList,
                         binding.searchView
                     )
 
-                    binding.addButton.visibility = View.VISIBLE
-                    checkFavorite()
+                    checkFavorite(mContext)
+                    binding.nestedScrollView.visibility = View.VISIBLE // prevent UI error
                 }
             }
         }.fold(
@@ -277,10 +283,8 @@ class SearchFragment : Fragment() {
         instaMediaList = ArrayList()
     }
 
-    private fun checkFavorite() {
-        binding.favoriteImageView.visibility = View.VISIBLE
-
-        val helper = FavoriteOpenHelper(requireContext())
+    private fun checkFavorite(context: Context) {
+        val helper = FavoriteOpenHelper(context)
         helper.writableDatabase.use { db ->
             db.rawQuery("SELECT name FROM FAVORITE_TABLE ORDER BY id DESC", null).use { c ->
                 var next = c.moveToFirst() // check cursor has first row or not

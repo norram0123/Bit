@@ -21,7 +21,7 @@ class SearchAdapter(
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val image: ImageView = view.findViewById(R.id.itemSearchImage)
         val expand: Button = view.findViewById(R.id.itemSearchButton)
-        var isExpanded = true
+        var isExpanded = false
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {

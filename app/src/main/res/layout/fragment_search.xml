@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <SearchView
+        <android.widget.SearchView
             android:id="@+id/searchView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -76,7 +76,6 @@
                         android:layout_marginBottom="@dimen/profile_mp"
                         android:contentDescription="@string/image_favorite"
                         android:src="@drawable/ic_baseline_favorite_border_24"
-                        android:visibility="invisible"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -97,8 +96,7 @@
                     android:background="@drawable/button_round"
                     android:padding="0dp"
                     android:text="@string/add"
-                    android:textSize="24sp"
-                    android:visibility="invisible" />
+                    android:textSize="24sp" />
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
