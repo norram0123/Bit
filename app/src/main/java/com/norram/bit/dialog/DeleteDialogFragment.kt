@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 
 class DeleteDialogFragment(
-    private val historyAdapter: HistoryAdapter,
+    private val userAdapter: UserAdapter,
     private val historyList: ArrayList<HashMap<String, String>>,
     private val position: Int
     ): DialogFragment() {
@@ -22,8 +22,8 @@ class DeleteDialogFragment(
                         db.execSQL("DELETE FROM HISTORY_TABLE WHERE id = (SELECT id FROM HISTORY_TABLE ORDER BY id DESC LIMIT 1 OFFSET '$position')")
                     }
                     historyList.removeAt(position)
-                    historyAdapter.notifyItemRemoved(position)
-                    historyAdapter.notifyItemRangeChanged(position+1, historyList.size - position)
+                    userAdapter.notifyItemRemoved(position)
+                    userAdapter.notifyItemRangeChanged(position+1, historyList.size - position)
                 }
                 .setNegativeButton(R.string.cancel) { _, _ -> }
 
