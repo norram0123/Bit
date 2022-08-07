@@ -264,18 +264,14 @@ class SearchFragment : Fragment() {
     }
 
     private fun cutURL() {
-        var prefix = "https://instagram.com/"
-        if(username.startsWith(prefix)) {
-            val preIdx = username.indexOf(prefix) + prefix.length
-            val sufIdx = username.indexOf("?")
-            if(sufIdx != -1) username = username.substring(preIdx, sufIdx)
-        }
-        prefix = "https://www.instagram.com/"
-        if(username.startsWith(prefix)) {
-            val preIdx = username.indexOf(prefix) + prefix.length
-            val sufIdx = username.lastIndexOf("/")
-            if(sufIdx != -1) username = username.substring(preIdx, sufIdx)
-        }
+        val prefix = "instagram.com/"
+        if(username.indexOf(prefix) == -1) return
+        val preIdx = username.indexOf(prefix) + prefix.length
+        username = username.substring(preIdx, username.length-1)
+        var sufIdx = username.indexOf("?")
+        if(sufIdx == -1) sufIdx = username.indexOf("/")
+        if(sufIdx == -1) return
+        username = username.substring(0, sufIdx)
     }
 
     private fun resetData() {
