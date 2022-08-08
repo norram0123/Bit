@@ -1,7 +1,8 @@
 <h1 align="center">Bit <p font size="14sp">~Insta Viewer with expand button~</p></h1>
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/102008212/180078651-1d7b3f98-d624-4843-ae8c-7afe3c03433a.jpg" width="240dp" /><br>
-<br><br><br>
+<img src="https://user-images.githubusercontent.com/102008212/183113805-73ed9c52-a991-4353-ad41-9d9c279464a6.jpg" width="240dp" />
+<img src="https://user-images.githubusercontent.com/102008212/183113816-809339a5-9c47-4439-8bbe-0419f2506406.jpg" width="240dp" />
+<img src="https://user-images.githubusercontent.com/102008212/183113825-69e8130f-dc3c-4586-b882-64bbc238d30c.jpg" width="240dp" />
 
 ##   <img src="https://user-images.githubusercontent.com/102008212/180079714-0d0af206-38c5-4f0a-a91b-32e1396f9f2a.png" width="26px;" /> Main function
 
@@ -23,13 +24,14 @@ class Secret {
     }
 }
 ```
+<sub>↑ Change [YOUR BUSINESS ACCOUNT ID] and [APP ACCESS TOKEN]</sub>
 
 
 ## 📦 TODO
 
-<h6>・Fix profile icon acquisition error</h6>
-<h6>・Add function to display next image by sliding</h6>
-<p>(I want to improve readability...)
+<h6>・Support horizontal screen</h6>
+<h6>・Custom the app design</h6>
+<h6>・Introduce <a href="https://github.com/stfalcon-studio/StfalconImageViewer">Stfalcon ImageViewer</a> in ViewerActivity.</h6>
 　
 
 ## 👀 Author
