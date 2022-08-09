@@ -34,6 +34,7 @@ class UserAdapter(
         val image: ImageView = view.findViewById(R.id.itemHistoryImage)
         val text: TextView = view.findViewById(R.id.itemHistoryText)
         val liner: LinearLayout = view.findViewById(R.id.itemHistoryLinear)
+        val favorite: ImageView = view.findViewById(R.id.itemFavoriteImage)
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
@@ -61,6 +62,7 @@ class UserAdapter(
                 }
             })
         holder.text.text = history["name"]
+        if(history["isFavorite"] == "true") holder.favorite.visibility = View.VISIBLE
 
         holder.liner.setOnClickListener { view ->
             history["name"]?.let {

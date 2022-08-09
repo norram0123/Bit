@@ -10,21 +10,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <android.widget.SearchView
-            android:id="@+id/searchView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:iconifiedByDefault="false"
-            android:queryHint="@string/search_hint" />
-
-        <Button
-            android:id="@+id/searchButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/btn_margin"
-            android:layout_marginEnd="@dimen/btn_margin"
-            android:text="@string/search_button" />
-
         <androidx.core.widget.NestedScrollView
             android:id="@+id/nestedScrollView"
             android:layout_width="match_parent"
@@ -35,7 +20,25 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <android.widget.SearchView
+                    android:id="@+id/searchView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:iconifiedByDefault="false"
+                    android:queryHint="@string/search_hint" />
+
+                <Button
+                    android:id="@+id/searchButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/btn_margin"
+                    android:layout_marginEnd="@dimen/btn_margin"
+                    android:insetBottom="0dp"
+                    android:text="@string/search_button"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Bit.MaterialCardView.Rounded" />
+
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/profileConstraint"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
@@ -84,7 +87,6 @@
                     android:id="@+id/recyclerView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
-
                 </androidx.recyclerview.widget.RecyclerView>
 
                 <Button
@@ -97,9 +99,7 @@
                     android:padding="0dp"
                     android:text="@string/add"
                     android:textSize="24sp" />
-
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
-
     </androidx.appcompat.widget.LinearLayoutCompat>
 </layout>

@@ -31,6 +31,21 @@ class HistoryFragment : Fragment() {
         binding.recyclerView.layoutManager =
             GridLayoutManager(requireContext(), 3, RecyclerView.VERTICAL, false)
 
+        val helperFav = FavoriteOpenHelper(requireContext())
+        val favListTmp = ArrayList<String>()
+        helperFav.writableDatabase.use { db ->
+            db.rawQuery(
+                "SELECT name FROM FAVORITE_TABLE ORDER BY id DESC", null
+            ).use { c ->
+                var next = c.moveToFirst()
+                // get all rows
+                while (next) {
+                    favListTmp.add(c.getString(0))
+                    next = c.moveToNext() // check cursor has first row or not
+                }
+            }
+        }
+
         val helper = HistoryOpenHelper(requireContext())
         val historyList = ArrayList<HashMap<String, String>>()
         helper.writableDatabase.use { db ->
@@ -48,6 +63,8 @@ class HistoryFragment : Fragment() {
                     val name = c.getString(1)
                     data["url"] = url
                     data["name"] = name
+                    data["isFavorite"] =
+                        if(favListTmp.contains(name)) "true" else "false"
                     historyList.add(data)
                     next = c.moveToNext() // check cursor has first row or not
                 }

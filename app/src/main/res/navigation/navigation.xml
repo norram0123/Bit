@@ -8,7 +8,6 @@
     <fragment
         android:id="@+id/modeFragment"
         android:name="com.norram.bit.ModeFragment"
-        android:label="fragment_mode"
         tools:layout="@layout/fragment_mode" >
         <action
             android:id="@+id/action_modeFragment_to_searchFragment"
@@ -17,7 +16,6 @@
     <fragment
         android:id="@+id/searchFragment"
         android:name="com.norram.bit.SearchFragment"
-        android:label="fragment_search"
         tools:layout="@layout/fragment_search">
         <argument
             android:name="username"

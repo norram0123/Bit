@@ -53,7 +53,10 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.nestedScrollView.visibility = View.GONE // prevent UI error
+        // prevent UI error
+        binding.profileConstraint.visibility = View.GONE
+        binding.recyclerView.visibility = View.GONE
+        binding.addButton.visibility = View.GONE
 
         val args: SearchFragmentArgs by navArgs()
         binding.searchView.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
@@ -188,8 +191,11 @@ class SearchFragment : Fragment() {
                 val mediaArray = mediaJSON.getJSONArray("data")
 
                 for (i in 0 until mediaArray.length()) {
+                    var permalink = ""
                     val mediaData = mediaArray.getJSONObject(i)
                     val childrenUrls = ArrayList<String>()
+                    if(mediaData.has("permalink"))
+                        permalink = mediaData.getString("permalink")
                     if (mediaData.getString("media_type") == "CAROUSEL_ALBUM"
                         && mediaData.has("children")) {
                         val childrenDataArray =
@@ -206,6 +212,7 @@ class SearchFragment : Fragment() {
                         instaMediaList.add(
                             InstaMedia(
                                 mediaData.getString("media_url"),
+                                permalink,
                                 mediaData.getString("media_type"),
                                 childrenUrls,
                                 true
@@ -253,7 +260,10 @@ class SearchFragment : Fragment() {
                     )
 
                     checkFavorite(mContext)
-                    binding.nestedScrollView.visibility = View.VISIBLE // prevent UI error
+                    // prevent UI error
+                    binding.profileConstraint.visibility = View.VISIBLE
+                    binding.recyclerView.visibility = View.VISIBLE
+                    binding.addButton.visibility = View.VISIBLE
                 }
             }
         }.fold(

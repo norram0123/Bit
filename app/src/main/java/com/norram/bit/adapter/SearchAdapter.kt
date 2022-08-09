@@ -67,6 +67,7 @@ class SearchAdapter(
 
             val intent = Intent(context, ViewerActivity::class.java)
             intent.putExtra("IMAGE_URL", instaMedia.url)
+            intent.putExtra("IMAGE_PERMALINK", instaMedia.permalink)
             context.startActivity(intent)
         }
     }
@@ -77,7 +78,7 @@ class SearchAdapter(
         for(i in 0 until instaMedia.childrenUrls.size) {
             instaMediaList.add(
                 position+1 + i,
-                InstaMedia(instaMedia.childrenUrls[i], "IMAGE", arrayListOf(""), false)
+                InstaMedia(instaMedia.childrenUrls[i], instaMedia.permalink, "IMAGE", arrayListOf(""), false)
             )}
         notifyItemRangeInserted(position+1, instaMedia.childrenUrls.size)
         notifyItemRangeChanged(position, instaMediaList.size - position)

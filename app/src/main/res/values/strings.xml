@@ -8,7 +8,8 @@
     <string name="mode">Choose mode</string>
     <string name="image_item">ItemImage</string>
     <string name="image_favorite">Favorite</string>
-    <string name="open_button">Open browse</string>
+    <string name="post_button">View post</string>
+    <string name="browse_button">In browser</string>
     <string name="chosen_image">ChosenImage</string>
     <string name="icon_image">IconImage</string>
     <string name="error0">You are not connected to the Internet.</string>
@@ -18,4 +19,5 @@
     <string name="dialog_delete_history">Are you sure you want to delete the history?</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="history">History</string>
 </resources>

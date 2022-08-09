@@ -1,28 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:id="@+id/itemHistoryLinear"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/itemHistoryLinear"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/item_margin"
+    android:gravity="center"
     android:orientation="vertical">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/itemHistoryCard"
+    <FrameLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
+        android:layout_height="wrap_content">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/itemHistoryCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+
+            <ImageView
+                android:id="@+id/itemHistoryImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/image_item"
+                android:focusableInTouchMode="false" />
+        </androidx.cardview.widget.CardView>
 
         <ImageView
-            android:id="@+id/itemHistoryImage"
-            android:layout_width="match_parent"
+            android:id="@+id/itemFavoriteImage"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/image_item"
-            android:focusableInTouchMode="false" />
-    </androidx.cardview.widget.CardView>
+            android:layout_gravity="bottom|end"
+            android:contentDescription="@string/image_favorite"
+            android:elevation="@dimen/favorite_elv"
+            android:visibility="gone"
+            app:srcCompat="@drawable/ic_baseline_favorite_pink_24"
+            app:tint="?attr/colorPrimary" />
+
+    </FrameLayout>
 
     <TextView
         android:id="@+id/itemHistoryText"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="64dp"
         android:gravity="center_horizontal"
         android:paddingLeft="@dimen/text_padding"
         android:paddingRight="@dimen/text_padding" />

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".HistoryFragment">
 
@@ -22,13 +23,35 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/btn_margin"
             android:layout_marginEnd="@dimen/btn_margin"
-            android:layout_marginBottom="@dimen/btn_margin"
-            android:text="@string/search_button" />
+            android:insetBottom="0dp"
+            android:text="@string/search_button"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Bit.MaterialCardView.Rounded" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:fillViewport="true">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/history"
+                    android:textSize="16sp"
+                    app:drawableLeftCompat="@drawable/ic_baseline_history_24"
+                    app:drawableTint="@android:color/tab_indicator_text" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 </layout>

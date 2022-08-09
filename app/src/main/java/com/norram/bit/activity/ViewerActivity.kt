@@ -1,13 +1,15 @@
 package com.norram.bit
 
 import android.content.Intent
+import android.graphics.BlendMode
+import android.graphics.BlendModeColorFilter
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.net.Uri
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.GestureDetector
-import android.view.MotionEvent
-import android.view.ScaleGestureDetector
-import android.view.ViewTreeObserver
+import android.view.*
 import androidx.core.view.GestureDetectorCompat
 import androidx.databinding.DataBindingUtil
 import com.norram.bit.databinding.ActivityViewerBinding
@@ -32,6 +34,17 @@ class ViewerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_viewer)
         val imageUrl = intent.getStringExtra("IMAGE_URL")
+        val permalink = intent.getStringExtra("IMAGE_PERMALINK")
+
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            binding.toolbar.navigationIcon?.colorFilter = BlendModeColorFilter(Color.rgb(125, 125, 125), BlendMode.SRC_ATOP)
+        } else {
+            @Suppress("DEPRECATION")
+            binding.toolbar.navigationIcon?.setColorFilter(Color.rgb(125, 125, 125), PorterDuff.Mode.SRC_ATOP)
+        }
 
         mScaleGestureDetector = ScaleGestureDetector(this, ScaleListener())
         mPanGestureDetector = GestureDetectorCompat(this, PanListener())
@@ -76,7 +89,12 @@ class ViewerActivity : AppCompatActivity() {
             })
         }
 
-        binding.openButton.setOnClickListener {
+        binding.postButton.setOnClickListener {
+            val uri = Uri.parse(permalink)
+            val exIntent = Intent(Intent.ACTION_VIEW, uri)
+            startActivity(exIntent)
+        }
+        binding.browseButton.setOnClickListener {
             val uri = Uri.parse(imageUrl)
             val exIntent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(exIntent)
@@ -87,6 +105,16 @@ class ViewerActivity : AppCompatActivity() {
         mScaleGestureDetector.onTouchEvent(event)
         mPanGestureDetector.onTouchEvent(event)
         return super.onTouchEvent(event)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId) {
+            android.R.id.home -> {
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private inner class PanListener : GestureDetector.SimpleOnGestureListener() {

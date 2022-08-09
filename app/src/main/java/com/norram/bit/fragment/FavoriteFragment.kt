@@ -44,6 +44,7 @@ class FavoriteFragment : Fragment() {
                     val name = c.getString(1)
                     data["url"] = url
                     data["name"] = name
+                    data["isFavorite"] = "true"
                     favoriteList.add(data)
                     next = c.moveToNext() // check cursor has first row or not
                 }
