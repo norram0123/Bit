@@ -16,7 +16,9 @@ import com.squareup.picasso.Picasso
 class SearchAdapter(
     private val context: Context,
     private val instaMediaList: ArrayList<InstaMedia>,
-    private val searchView: SearchView): RecyclerView.Adapter<SearchAdapter.ViewHolder>() {
+    private val searchView: SearchView
+    ): RecyclerView.Adapter<SearchAdapter.ViewHolder>() {
+    private val spanCount = 3
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val image: ImageView = view.findViewById(R.id.itemSearchImage)
@@ -35,7 +37,7 @@ class SearchAdapter(
         holder.isExpanded = instaMedia.flag
         Picasso.get()
             .load(instaMedia.url)
-            .resize(screen.width / 3, screen.width / 3)
+            .resize(screen.width / spanCount, screen.width / spanCount)
             .centerCrop() // trim from the center
             .into(holder.image)
 
@@ -76,10 +78,14 @@ class SearchAdapter(
 
     private fun expandAlbum(position: Int, instaMedia: InstaMedia) {
         for(i in 0 until instaMedia.childrenUrls.size) {
-            instaMediaList.add(
-                position+1 + i,
-                InstaMedia(instaMedia.childrenUrls[i], instaMedia.permalink, "IMAGE", arrayListOf(""), false)
-            )}
+            instaMediaList.add(position+1 + i,
+                InstaMedia(instaMedia.childrenUrls[i],
+                    instaMedia.permalink,
+                    "IMAGE",
+                    arrayListOf(""),
+                    false)
+            )
+        }
         notifyItemRangeInserted(position+1, instaMedia.childrenUrls.size)
         notifyItemRangeChanged(position, instaMediaList.size - position)
     }

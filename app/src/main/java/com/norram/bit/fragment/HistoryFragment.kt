@@ -27,9 +27,10 @@ class HistoryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val spanCount = 3
         binding.searchView.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
         binding.recyclerView.layoutManager =
-            GridLayoutManager(requireContext(), 3, RecyclerView.VERTICAL, false)
+            GridLayoutManager(requireContext(), spanCount, RecyclerView.VERTICAL, false)
 
         val helperFav = FavoriteOpenHelper(requireContext())
         val favListTmp = ArrayList<String>()
@@ -37,11 +38,11 @@ class HistoryFragment : Fragment() {
             db.rawQuery(
                 "SELECT name FROM FAVORITE_TABLE ORDER BY id DESC", null
             ).use { c ->
-                var next = c.moveToFirst()
+                var next = c.moveToFirst() // check cursor has first row or not
                 // get all rows
                 while (next) {
                     favListTmp.add(c.getString(0))
-                    next = c.moveToNext() // check cursor has first row or not
+                    next = c.moveToNext()
                 }
             }
         }
@@ -63,10 +64,9 @@ class HistoryFragment : Fragment() {
                     val name = c.getString(1)
                     data["url"] = url
                     data["name"] = name
-                    data["isFavorite"] =
-                        if(favListTmp.contains(name)) "true" else "false"
+                    data["isFavorite"] = if(favListTmp.contains(name)) "true" else "false"
                     historyList.add(data)
-                    next = c.moveToNext() // check cursor has first row or not
+                    next = c.moveToNext()
                 }
             }
         }
@@ -83,7 +83,9 @@ class HistoryFragment : Fragment() {
                     binding.historyLinear.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 }
             })
-        } else { binding.recyclerView.adapter = UserAdapter(activity, historyList, "HISTORY_TABLE") }
+        } else {
+            binding.recyclerView.adapter = UserAdapter(activity, historyList, "HISTORY_TABLE")
+        }
 
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -103,6 +105,5 @@ class HistoryFragment : Fragment() {
                 findNavController().navigate(action)
             }
         }
-
     }
 }

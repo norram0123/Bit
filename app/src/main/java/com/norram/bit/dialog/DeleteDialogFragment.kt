@@ -23,7 +23,7 @@ class DeleteDialogFragment(
                     }
                     historyList.removeAt(position)
                     userAdapter.notifyItemRemoved(position)
-                    userAdapter.notifyItemRangeChanged(position+1, historyList.size - position)
+                    userAdapter.notifyItemRangeChanged(position, historyList.size - position)
                 }
                 .setNegativeButton(R.string.cancel) { _, _ -> }
 

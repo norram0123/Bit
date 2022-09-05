@@ -33,7 +33,7 @@ import java.net.URL
 
 class SearchFragment : Fragment() {
     private lateinit var binding: FragmentSearchBinding
-
+    private val spanCount = 3
     private val requestUrlFormatter = Secret.requestUrlFormatter()
     private var username = ""
     private var usernameTmp = ""
@@ -60,8 +60,9 @@ class SearchFragment : Fragment() {
 
         val args: SearchFragmentArgs by navArgs()
         binding.searchView.inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-        binding.searchView.setQuery(args.username, false)
         username = args.username
+
+        binding.searchView.setQuery(username, false)
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
@@ -80,8 +81,7 @@ class SearchFragment : Fragment() {
         binding.searchButton.setOnClickListener {
             //clear focus
             binding.searchView.clearFocus()
-            val inputMethodManager
-                    = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val inputMethodManager = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(it.windowToken, 0)
 
             if(usernameTmp == "") return@setOnClickListener
@@ -91,7 +91,7 @@ class SearchFragment : Fragment() {
         }
 
         val screen = Screen.getInstance()
-        binding.searchCard.radius = (screen.width / 6).toFloat()
+        binding.searchCard.radius = (screen.width / (spanCount * 2)).toFloat()
 
         binding.favoriteImageView.setOnClickListener {
             val helper = FavoriteOpenHelper(requireContext())
@@ -101,9 +101,9 @@ class SearchFragment : Fragment() {
                     binding.favoriteImageView.setImageResource(R.drawable.ic_baseline_favorite_border_24)
                     false
                 } else {
-                    db.execSQL("INSERT INTO FAVORITE_TABLE(url, name) " +
-                            "VALUES('$iconUrl', '$username')")
+                    db.execSQL("INSERT INTO FAVORITE_TABLE(url, name) VALUES('$iconUrl', '$username')")
                     binding.favoriteImageView.setImageResource(R.drawable.ic_baseline_favorite_pink_24)
+
                     val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.touch_favorite)
                     it.startAnimation(animation)
                     true
@@ -111,9 +111,7 @@ class SearchFragment : Fragment() {
             }
         }
 
-        binding.recyclerView.layoutManager =
-            GridLayoutManager(requireContext(), 3, RecyclerView.VERTICAL, false)
-        getMediaInfo()
+        binding.recyclerView.layoutManager = GridLayoutManager(requireContext(), spanCount, RecyclerView.VERTICAL, false)
 
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
@@ -123,7 +121,6 @@ class SearchFragment : Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when(menuItem.itemId) {
-//            R.id.help -> { val dialogFragment = HelpDialogFragment() dialogFragment.show(supportFragmentManager,  "help_dialog") true }
                     R.id.expandAll -> {
                         binding.recyclerView.adapter?.let { adapter ->
                             for(i in adapter.itemCount downTo 0) {
@@ -140,29 +137,37 @@ class SearchFragment : Fragment() {
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+        getMediaInfo()
     }
 
     private fun getMediaInfo() {
-        cutURL()
+        // cut URL
+        val prefix = "instagram.com/"
+        if(username.indexOf(prefix) != -1) {
+            val preIdx = username.indexOf(prefix) + prefix.length
+            username = username.substring(preIdx, username.length-1)
+            var sufIdx = username.indexOf("?")
+            if(sufIdx == -1) sufIdx = username.indexOf("/")
+            if(sufIdx != -1) username = username.substring(0, sufIdx)
+        }
+
         val requestUrl = String.format(requestUrlFormatter, username, afterToken)
         val url = URL(requestUrl)
         val connection = url.openConnection() as HttpURLConnection
         connection.connectTimeout = 10_000
         connection.readTimeout = 10_000
 
-        val connectivityService =
-            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityService = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             connectivityService.getNetworkCapabilities(connectivityService.activeNetwork) ?: run {
-                Toast.makeText(requireContext(),
-                    resources.getString(R.string.error0), Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), resources.getString(R.string.error0), Toast.LENGTH_SHORT).show()
                 return
             }
         } else {
             @Suppress("DEPRECATION")
             connectivityService.activeNetworkInfo ?: run {
-                Toast.makeText(requireContext(),
-                    resources.getString(R.string.error0), Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), resources.getString(R.string.error0), Toast.LENGTH_SHORT).show()
                 return
             }
         }
@@ -176,8 +181,7 @@ class SearchFragment : Fragment() {
                 val mContext: Context = context ?: return@launch
                 connection.errorStream?.let {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(mContext,
-                            resources.getString(R.string.error1), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(mContext, resources.getString(R.string.error1), Toast.LENGTH_SHORT).show()
                     }
                     return@launch
                 }
@@ -194,12 +198,9 @@ class SearchFragment : Fragment() {
                     var permalink = ""
                     val mediaData = mediaArray.getJSONObject(i)
                     val childrenUrls = ArrayList<String>()
-                    if(mediaData.has("permalink"))
-                        permalink = mediaData.getString("permalink")
-                    if (mediaData.getString("media_type") == "CAROUSEL_ALBUM"
-                        && mediaData.has("children")) {
-                        val childrenDataArray =
-                            mediaData.getJSONObject("children").getJSONArray("data")
+                    if(mediaData.has("permalink")) permalink = mediaData.getString("permalink")
+                    if (mediaData.getString("media_type") == "CAROUSEL_ALBUM" && mediaData.has("children")) {
+                        val childrenDataArray = mediaData.getJSONObject("children").getJSONArray("data")
                         for (j in 1 until childrenDataArray.length()) {
                             val childrenData = childrenDataArray.getJSONObject(j)
                             if (childrenData.getString("media_type") == "IMAGE")
@@ -222,8 +223,7 @@ class SearchFragment : Fragment() {
 
                 val helper = HistoryOpenHelper(mContext)
                 helper.writableDatabase.use { db ->
-                    db.execSQL("INSERT INTO HISTORY_TABLE(url, name) " +
-                            "VALUES('$iconUrl', '$username')")
+                    db.execSQL("INSERT INTO HISTORY_TABLE(url, name) VALUES('$iconUrl', '$username')")
                 }
 
                 binding.addButton.setOnClickListener {
@@ -235,11 +235,11 @@ class SearchFragment : Fragment() {
                             return@setOnClickListener
                         }
                     }
-                    Toast.makeText(mContext,
-                        resources.getString(R.string.finish), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(mContext, resources.getString(R.string.finish), Toast.LENGTH_SHORT).show()
                 }
 
                 withContext(Dispatchers.Main) {
+                    // set icon
                     val screen = Screen.getInstance()
                     if (afterToken == "") {
                         binding.nestedScrollView.fullScroll(ScrollView.FOCUS_UP) // return to the top
@@ -247,19 +247,15 @@ class SearchFragment : Fragment() {
                         if(iconUrl != "") {
                             Picasso.get()
                                 .load(iconUrl)
-                                .resize(screen.width / 3, screen.width / 3)
+                                .resize(screen.width / spanCount, screen.width / spanCount)
                                 .centerCrop() // trim from the center
                                 .into(binding.iconImageView)
                         }
                     }
 
-                    binding.recyclerView.adapter = SearchAdapter(
-                        mContext,
-                        instaMediaList,
-                        binding.searchView
-                    )
-
+                    binding.recyclerView.adapter = SearchAdapter(mContext, instaMediaList, binding.searchView)
                     checkFavorite(mContext)
+
                     // prevent UI error
                     binding.profileConstraint.visibility = View.VISIBLE
                     binding.recyclerView.visibility = View.VISIBLE
@@ -268,20 +264,8 @@ class SearchFragment : Fragment() {
             }
         }.fold(
             onSuccess = {},
-            onFailure = {Toast.makeText(requireContext(),
-                resources.getString(R.string.error2), Toast.LENGTH_LONG).show() }
+            onFailure = { Toast.makeText(requireContext(), resources.getString(R.string.error2), Toast.LENGTH_LONG).show() }
         ).also { connection.disconnect() }
-    }
-
-    private fun cutURL() {
-        val prefix = "instagram.com/"
-        if(username.indexOf(prefix) == -1) return
-        val preIdx = username.indexOf(prefix) + prefix.length
-        username = username.substring(preIdx, username.length-1)
-        var sufIdx = username.indexOf("?")
-        if(sufIdx == -1) sufIdx = username.indexOf("/")
-        if(sufIdx == -1) return
-        username = username.substring(0, sufIdx)
     }
 
     private fun resetData() {
@@ -292,7 +276,9 @@ class SearchFragment : Fragment() {
     private fun checkFavorite(context: Context) {
         val helper = FavoriteOpenHelper(context)
         helper.writableDatabase.use { db ->
-            db.rawQuery("SELECT name FROM FAVORITE_TABLE ORDER BY id DESC", null).use { c ->
+            db.rawQuery(
+                "SELECT name FROM FAVORITE_TABLE ORDER BY id DESC", null
+            ).use { c ->
                 var next = c.moveToFirst() // check cursor has first row or not
                 while (next) {
                     val name = c.getString(0)
@@ -301,7 +287,7 @@ class SearchFragment : Fragment() {
                         favoriteFlag = true
                         return
                     }
-                    next = c.moveToNext() // check cursor has first row or not
+                    next = c.moveToNext()
                 }
                 binding.favoriteImageView.setImageResource(R.drawable.ic_baseline_favorite_border_24)
                 favoriteFlag = false

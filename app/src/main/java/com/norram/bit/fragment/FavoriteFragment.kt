@@ -23,8 +23,9 @@ class FavoriteFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val spanCount = 3
         binding.recyclerView.layoutManager =
-            GridLayoutManager(requireContext(), 3, RecyclerView.VERTICAL, false)
+            GridLayoutManager(requireContext(), spanCount, RecyclerView.VERTICAL, false)
 
         val helper = FavoriteOpenHelper(requireContext())
         val favoriteList = ArrayList<HashMap<String, String>>()
@@ -46,7 +47,7 @@ class FavoriteFragment : Fragment() {
                     data["name"] = name
                     data["isFavorite"] = "true"
                     favoriteList.add(data)
-                    next = c.moveToNext() // check cursor has first row or not
+                    next = c.moveToNext()
                 }
             }
         }
